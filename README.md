@@ -1,4 +1,4 @@
-# drp-nepali-datepicker
+# drp-datepicker
 
 A dependency-free Bikram Sambat (BS) ↔ Gregorian (AD) date conversion engine plus a
 modern `<drp-datepicker>` Web Component — install once, drop it into any page.
@@ -11,7 +11,9 @@ modern `<drp-datepicker>` Web Component — install once, drop it into any page.
 - **Works everywhere:** ES module import, CommonJS `require()`, a CDN `<script>` tag, or bundled into a React/Vue/Electron app.
 - **Optional holidays.** Give it a list of dates and they're marked automatically. Skip it and the calendar just looks normal.
 
-## Live preview
+## Live demo
+
+Try the latest interactive demo at https://darpanadhikari.github.io/date-picker-demo.
 
 Every day cell shows the primary calendar's date large and centered, with the other
 calendar's date in small text tucked into the **bottom-right corner** of the cell —
@@ -22,7 +24,7 @@ subtitle in the other one.
 ## Install
 
 ```bash
-npm install drp-nepali-datepicker
+npm install drp-datepicker
 ```
 
 ### Or via CDN — no npm, no build step
@@ -32,7 +34,7 @@ Drop this into any HTML page and you're done:
 ```html
 <drp-datepicker id="dp"></drp-datepicker>
 
-<script src="https://unpkg.com/drp-nepali-datepicker/dist/drp-datepicker.global.js"></script>
+<script src="https://unpkg.com/drp-datepicker/dist/drp-datepicker.global.js"></script>
 <script>
   const dp = document.getElementById('dp');
   dp.addEventListener('change', (e) => console.log(e.detail));
@@ -42,7 +44,7 @@ Drop this into any HTML page and you're done:
 jsDelivr works the same way, and you can pin a version once you've published one:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/drp-nepali-datepicker@1/dist/drp-datepicker.global.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/drp-datepicker@latest/dist/drp-datepicker.global.js"></script>
 ```
 
 Both CDNs auto-register `<drp-datepicker>` and expose `window.DRP = { DrpNepaliCalendar, DrpDatePicker, registerDrpDatePicker }`.
@@ -52,7 +54,7 @@ Both CDNs auto-register `<drp-datepicker>` and expose `window.DRP = { DrpNepaliC
 ### As an ES module (bundler, or `<script type="module">`)
 
 ```js
-import 'drp-nepali-datepicker'; // registers <drp-datepicker> and you're done
+import 'drp-datepicker'; // registers <drp-datepicker> and you're done
 ```
 
 ```html
@@ -79,8 +81,8 @@ each cell becomes the Nepali (BS) equivalent instead.
 ### Just the conversion logic, no UI
 
 ```js
-import { DrpNepaliCalendar } from 'drp-nepali-datepicker/core';
-// or CommonJS: const { DrpNepaliCalendar } = require('drp-nepali-datepicker/core');
+import { DrpNepaliCalendar } from 'drp-datepicker/core';
+// or CommonJS: const { DrpNepaliCalendar } = require('drp-datepicker/core');
 
 const cal = new DrpNepaliCalendar();
 cal.eng_to_nep(2025, 6, 10);   // -> { year: 2082, month: 2, date: 27, day: 'Tuesday', nmonth: 'Jestha', num_day: 3 }
