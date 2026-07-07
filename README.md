@@ -222,7 +222,7 @@ conversion loop required. This is the exact same method `<drp-datepicker>` uses
 internally, so your custom UI and the built-in picker will always agree.
 
 ```js
-import { DrpNepaliCalendar } from 'drp-nepali-datepicker/core';
+import { DrpNepaliCalendar } from 'drp-datepicker/core';
 const cal = new DrpNepaliCalendar();
 
 // A Nepali month, e.g. what a developer would type as "2083-03"
@@ -350,11 +350,11 @@ npm test        # scripts/smoke-test.mjs (conversion + picker rendering) and
    ```bash
    git init
    git add .
-   git commit -m "Initial commit: drp-nepali-datepicker"
+   git commit -m "Initial commit: drp-datepicker"
    ```
 2. Create a new empty repository on GitHub (via the website or `gh repo create`), then:
    ```bash
-   git remote add origin https://github.com/<your-username>/drp-nepali-datepicker.git
+   git remote add origin https://github.com/<your-username>/drp-datepicker.git
    git branch -M main
    git push -u origin main
    ```
