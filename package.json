@@ -1,0 +1,56 @@
+{
+  "name": "drp-nepali-datepicker",
+  "version": "1.0.0",
+  "description": "DRP Nepali Datepicker — Bikram Sambat (BS) <-> Gregorian (AD) date conversion + a modern <drp-datepicker> Web Component with dual-calendar day cells.",
+  "type": "module",
+  "main": "dist/drp-datepicker.cjs.js",
+  "module": "src/index.js",
+  "browser": "dist/drp-datepicker.global.js",
+  "unpkg": "dist/drp-datepicker.global.js",
+  "exports": {
+    ".": {
+      "import": "./src/index.js",
+      "require": "./dist/drp-datepicker.cjs.js"
+    },
+    "./core": {
+      "import": "./src/core/nepali-calendar.js",
+      "require": "./dist/drp-core.cjs.js"
+    },
+    "./datepicker": {
+      "import": "./src/components/nepali-datepicker.js"
+    },
+    "./dist/*": "./dist/*"
+  },
+  "files": [
+    "src",
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node scripts/smoke-test.mjs && node scripts/form-test.mjs",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "drp",
+    "nepali",
+    "bikram-sambat",
+    "bs-calendar",
+    "nepali-date",
+    "nepali-datepicker",
+    "web-component",
+    "electron"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "esbuild": "^0.21.0",
+    "jsdom": "^24.0.0"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "directories": {
+    "example": "examples"
+  },
+  "author": ""
+}

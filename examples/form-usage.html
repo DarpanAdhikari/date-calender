@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>drp-nepali-datepicker — inside a real &lt;form&gt;</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 480px; margin: 60px auto; color: #2a241d; }
+  label { display: block; font-size: 13px; font-weight: 600; margin: 16px 0 6px; }
+  button { margin-top: 20px; padding: 8px 16px; border-radius: 8px; border: none; background: #b3352b; color: #fff; font-weight: 600; cursor: pointer; }
+  pre { background: #f4f1ea; padding: 12px; border-radius: 8px; margin-top: 20px; font-size: 13px; }
+  drp-datepicker:invalid { --ndp-border: #b3352b; } /* native :invalid works because the component is form-associated */
+</style>
+</head>
+<body>
+  <h1>Booking form</h1>
+
+  <form id="booking">
+    <label for="name">Name</label>
+    <input id="name" name="name" required />
+
+    <!-- name + required behave like any other form control: FormData picks
+         this up automatically, and the form won't submit until it's filled -->
+    <label for="date">Delivery date (BS)</label>
+    <drp-datepicker id="date" name="deliveryDate" required placeholder="Pick a date"></drp-datepicker>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <pre id="out">(nothing submitted yet)</pre>
+
+  <script type="module">
+    import '../src/index.js';
+
+    const form = document.getElementById('booking');
+    const dp = document.getElementById('date');
+
+    // Listen for every date change, same as any other input's `change` event
+    dp.addEventListener('change', (e) => {
+      console.log('picker changed:', e.detail.bs.formatted, e.detail.ad.formatted);
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault(); // just so this demo doesn't navigate away
+      const data = new FormData(form);
+      document.getElementById('out').textContent = JSON.stringify(Object.fromEntries(data), null, 2);
+    });
+  </script>
+</body>
+</html>

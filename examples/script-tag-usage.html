@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>drp-nepali-datepicker — plain &lt;script&gt; usage</title>
+</head>
+<body>
+  <p>Delivery date (BS):</p>
+  <drp-datepicker id="dp" mark-saturday="true"></drp-datepicker>
+
+  <!-- Drop this one file in anywhere — an Electron renderer, CI-generated report page,
+       a legacy jQuery admin panel, whatever. No bundler required. -->
+  <script src="../dist/drp-datepicker.global.js"></script>
+  <script>
+    // window.DRP = { DrpNepaliCalendar, DrpDatePicker, registerDrpDatePicker }
+    const dp = document.getElementById('dp');
+
+    dp.holidays = [
+      { date: '2082-01-01', label: 'Nepali New Year' },
+    ];
+
+    dp.addEventListener('change', (e) => {
+      console.log('BS:', e.detail.bs, 'AD:', e.detail.ad);
+    });
+
+    // Core conversion is also available directly, no component needed:
+    const cal = new window.DRP.DrpNepaliCalendar();
+    console.log(cal.eng_to_nep(2025, 6, 10));
+  </script>
+</body>
+</html>

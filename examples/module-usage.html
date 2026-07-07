@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>drp-nepali-datepicker — module usage</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 60px auto; color: #2a241d; }
+  h1 { font-size: 20px; }
+  section { margin-bottom: 40px; }
+  pre { background: #f4f1ea; padding: 12px; border-radius: 8px; overflow: auto; font-size: 13px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+</style>
+</head>
+<body>
+  <h1>drp-nepali-datepicker</h1>
+
+  <section>
+    <label for="dp1">Popup datepicker (with holidays)</label>
+    <drp-datepicker id="dp1" placeholder="Select a date"></drp-datepicker>
+    <pre id="out1">value: (none)</pre>
+  </section>
+
+  <section>
+    <label>Inline calendar, Devanagari digits</label>
+    <drp-datepicker id="dp2" inline digits="ne"></drp-datepicker>
+  </section>
+
+  <section>
+    <label for="dp4">English-first picker (type="ad") — Nepali date shown small, bottom-right</label>
+    <drp-datepicker id="dp4" type="ad" placeholder="Select a date"></drp-datepicker>
+  </section>
+
+  <section>
+    <label>Direct BS ↔ AD conversion (no UI)</label>
+    <pre id="out3"></pre>
+  </section>
+
+  <!-- In a real app: import from the installed package instead of a relative path -->
+  <!-- import { DrpNepaliCalendar } from 'drp-nepali-datepicker'; -->
+  <script type="module">
+    import { DrpNepaliCalendar } from '../src/index.js';
+
+    const dp1 = document.getElementById('dp1');
+    // Holidays are optional — if you never set this, the calendar just renders with no holiday marks.
+    dp1.holidays = [
+      { date: '2082-01-01', label: 'Nepali New Year' },
+      { date: '2082-07-10', label: 'Dashami' },
+    ];
+    dp1.addEventListener('change', (e) => {
+      document.getElementById('out1').textContent = 'value: ' + JSON.stringify(e.detail, null, 2);
+    });
+
+    const cal = new DrpNepaliCalendar();
+    document.getElementById('out3').textContent = JSON.stringify({
+      'eng_to_nep(2025,6,10)': cal.eng_to_nep(2025, 6, 10),
+      'nep_to_eng(2082,2,27)': cal.nep_to_eng(2082, 2, 27),
+      'get_current_fiscal_year()': cal.get_current_fiscal_year(),
+    }, null, 2);
+  </script>
+</body>
+</html>
