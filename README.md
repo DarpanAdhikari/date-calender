@@ -34,7 +34,7 @@ Drop this into any HTML page and you're done:
 ```html
 <drp-datepicker id="dp"></drp-datepicker>
 
-<script src="https://unpkg.com/drp-datepicker/dist/drp-datepicker.global.js"></script>
+<script src="https://unpkg.com/drp-datepicker@latest/dist/drp-datepicker.global.js"></script>
 <script>
   const dp = document.getElementById('dp');
   dp.addEventListener('change', (e) => console.log(e.detail));
