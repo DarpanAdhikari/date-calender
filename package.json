@@ -1,6 +1,6 @@
 {
   "name": "drp-datepicker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "DRP Nepali Datepicker — Bikram Sambat (BS) <-> Gregorian (AD) date conversion + a modern <drp-datepicker> Web Component with dual-calendar day cells.",
   "type": "module",
   "main": "dist/drp-datepicker.cjs.js",
