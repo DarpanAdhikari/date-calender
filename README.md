@@ -10,6 +10,9 @@ modern `<drp-datepicker>` Web Component — install once, drop it into any page.
 - **Zero dependencies, zero build step required to use it.**
 - **Works everywhere:** ES module import, CommonJS `require()`, a CDN `<script>` tag, or bundled into a React/Vue/Electron app.
 - **Optional holidays.** Give it a list of dates and they're marked automatically. Skip it and the calendar just looks normal.
+- **Keyboard accessible.** Full arrow-key navigation, focus trapping, ARIA roles for screen readers.
+- **Direct date input.** Type a date directly instead of only using the popup.
+- **Smart positioning.** The panel flips above the field when there isn't room below.
 
 ## Live demo
 
@@ -97,29 +100,58 @@ See `examples/module-usage.html` and `examples/script-tag-usage.html` for comple
 
 ## `<drp-datepicker>` — attributes
 
-| Attribute        | Type                          | Default              | Notes |
-|-------------------|-------------------------------|-----------------------|-------|
-| `type`            | `bs` \| `ad`                   | `bs`                   | `bs` = Nepali-primary (English shown small, bottom-right of each cell). `ad` = English-primary (Nepali shown small, bottom-right). |
-| `name`            | string                        | —                      | Pairs with `.value` in `FormData` on submit — see [Using it in a form](#using-it-in-a-form). |
-| `required`        | boolean attr                  | off                    | Blocks form submission until a date is picked; drives `:invalid`/`:valid`. |
-| `value`           | `'YYYY-MM-DD'`                 | —                      | In whichever system `type` is set to. Settable/gettable. |
-| `min`             | `'YYYY-MM-DD'`                 | —                      | In whichever system `type` is set to. Disables earlier days. |
-| `max`             | `'YYYY-MM-DD'`                 | —                      | In whichever system `type` is set to. Disables later days. |
-| `placeholder`     | string                        | `"Select date (BS/AD)"` | |
-| `disabled`        | boolean attr                  | off                    | |
-| `inline`          | boolean attr                  | off                    | Renders the calendar always-open in the page flow instead of a popup. |
-| `digits`          | `en` \| `ne`                   | `en`                   | Western vs Devanagari (०-९) numerals for the Nepali numbers. Also toggleable by the user via the calendar footer. |
-| `mark-saturday`   | `"true"` \| `"false"`          | `"true"`               | Styles Saturdays (the Nepali weekly holiday) in the accent color. |
+| Attribute          | Type                          | Default              | Notes |
+|---------------------|-------------------------------|-----------------------|-------|
+| `type`              | `bs` \| `ad`                   | `bs`                   | `bs` = Nepali-primary (English shown small, bottom-right of each cell). `ad` = English-primary (Nepali shown small, bottom-right). |
+| `name`              | string                        | —                      | Pairs with `.value` in `FormData` on submit — see [Using it in a form](#using-it-in-a-form). |
+| `required`          | boolean attr                  | off                    | Blocks form submission until a date is picked; drives `:invalid`/`:valid`. |
+| `value`             | `'YYYY-MM-DD'`                 | —                      | In whichever system `type` is set to. Settable/gettable. |
+| `min`               | `'YYYY-MM-DD'`                 | —                      | In whichever system `type` is set to. Disables earlier days. |
+| `max`               | `'YYYY-MM-DD'`                 | —                      | In whichever system `type` is set to. Disables later days. |
+| `placeholder`       | string                        | `"Select date (BS/AD)"` | |
+| `disabled`          | boolean attr                  | off                    | |
+| `inline`            | boolean attr                  | off                    | Renders the calendar always-open in the page flow instead of a popup. |
+| `digits`            | `en` \| `ne`                   | `en`                   | Western vs Devanagari (०-९) numerals for the Nepali numbers. Also toggleable by the user via the calendar footer. |
+| `mark-saturday`     | `"true"` \| `"false"`          | `"true"`               | Styles Saturdays (the Nepali weekly holiday) in the accent color. |
+| `first-day-of-week` | `0`–`6`                       | `0`                    | `0`=Sunday, `1`=Monday … `6`=Saturday. Reorders weekday headers and shifts grid offset. |
+| `format`            | string                        | —                      | Display format for the input field. See [Format tokens](#format-tokens) below. |
+
+### Format tokens
+
+When `format` is set, the input displays the selected date using the given template.
+Tokens are replaced case-sensitively. Numeric tokens respect the `digits` setting
+(Devanagari vs Western numerals).
+
+| Token  | Example (BS)      | Example (AD)         |
+|--------|-------------------|----------------------|
+| `YYYY` | `२०८२`            | `2025`               |
+| `YY`   | `८२`              | `25`                 |
+| `MMMM` | `Jestha`          | `June`               |
+| `MM`   | `०२`              | `06`                 |
+| `M`    | `२`               | `6`                  |
+| `DD`   | `२७`              | `27`                 |
+| `D`    | `२७`              | `27`                 |
+
+```html
+<drp-datepicker format="DD Month YYYY"></drp-datepicker>
+<!-- Displays "२७ Jestha २०८२" for BS, or "27 June 2025" for AD -->
+
+<drp-datepicker format="YYYY-MM-DD"></drp-datepicker>
+<!-- Displays "२०८२-०२-२७" in Devanagari, or "2082-02-27" in Western digits -->
+```
 
 ## `<drp-datepicker>` — properties
 
-| Property    | Type                                        | Notes |
-|-------------|----------------------------------------------|-------|
-| `.value`    | `string`                                      | Get/set the selected date, in whichever system `type` is set to. |
-| `.valueBS`  | `string` (`'YYYY-MM-DD'`, Nepali)             | Always available, regardless of `type`. |
-| `.valueAD`  | `string` (`'YYYY-MM-DD'`, English)            | Always available, regardless of `type`. |
-| `.holidays` | `Array<{ date: 'YYYY-MM-DD' (BS), label?: string }>` | **Optional.** If you never set this (or set `[]`), the calendar simply ignores holidays. |
-| `.calendar` | `DrpNepaliCalendar` instance                  | Direct access to the conversion engine used internally. |
+| Property         | Type                                        | Notes |
+|------------------|----------------------------------------------|-------|
+| `.value`         | `string`                                      | Get/set the selected date, in whichever system `type` is set to. |
+| `.valueBS`       | `string` (`'YYYY-MM-DD'`, Nepali)             | Always available, regardless of `type`. |
+| `.valueAD`       | `string` (`'YYYY-MM-DD'`, English)            | Always available, regardless of `type`. |
+| `.holidays`      | `Array<{ date: 'YYYY-MM-DD' (BS), label?: string }>` | **Optional.** If you never set this (or set `[]`), the calendar simply ignores holidays. |
+| `.disabledDates` | `Array<{ date: 'YYYY-MM-DD' }>`              | Disable specific dates. Date format matches the primary type (`type`). Disabled cells are greyed out, non-clickable, and skipped during keyboard navigation. |
+| `.firstDayOfWeek`| `number` (`0`–`6`)                           | Get/set the first day of the week. `0`=Sunday (default). |
+| `.format`        | `string` \| `null`                           | Get/set the display format string. Set to `null` or remove the attribute to use the default display. |
+| `.calendar`      | `DrpNepaliCalendar` instance                 | Direct access to the conversion engine used internally. |
 
 ## `<drp-datepicker>` — methods
 
@@ -132,6 +164,23 @@ See `examples/module-usage.html` and `examples/script-tag-usage.html` for comple
 
 - `change` — fires on selection. `event.detail = { bs: {year, month, date, formatted}, ad: {year, month, date, formatted} }` (both `null` if cleared).
 - `open` / `close`
+
+## Accessibility
+
+The datepicker is built with full keyboard and screen-reader support:
+
+- **Keyboard navigation** — Arrow keys navigate the day grid, Enter/Space select the focused day, Page Up/Down move between months, Home/End jump to the first/last day of the month, Escape closes the panel.
+- **Focus management** — When the panel opens, the selected (or today's) day receives a visual focus indicator. Tab cycles through panel controls (prev/next month, month/year picker, Clear, Today, digit toggle). When the panel closes, focus returns to the trigger button.
+- **ARIA** — The panel is `role="dialog"` with `aria-modal="true"`. The day grid is `role="grid"` with `aria-label` set to the current month/year. Each day cell is a `role="gridcell"` with `aria-selected`. The trigger button has `aria-haspopup="dialog"` and toggles `aria-expanded` as the panel opens and closes.
+- **Screen reader announcements** — An `aria-live="polite"` region announces date selection, clearing, and errors without interrupting the user's workflow.
+- **Direct input** — The input field is not `readonly`. You can type a date in `YYYY-MM-DD` format or as `"DD MonthName YYYY"` (e.g., `"27 Jestha 2082"`). Invalid input shows a red error border; valid input updates the picker automatically on Enter or blur.
+
+## Positioning
+
+When the panel opens, it checks how much space is available below the input field.
+If there isn't enough room, the panel flips to appear **above** the field instead —
+without changing its size. The position is also recalculated on scroll and window
+resize while the panel is open. Inline mode bypasses this logic entirely.
 
 ## Using it in a form
 
@@ -294,6 +343,11 @@ Supported ranges: AD `1944-04-14` → `~2033`, BS `2000-01-01` → `2090-12-xx` 
 `nep_to_eng_date()` validates its input by shape (`'YYYY-MM-DD'`) and range rather than by
 running it through a Gregorian-calendar check, so Nepali dates in 32-day months (e.g.
 `'2082-01-32'`) convert correctly instead of being rejected.
+
 ## License
 
 MIT
+
+---
+
+Developed by [Darpan Adhikari](https://darpanadhikari.com.np)
