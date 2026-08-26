@@ -16,9 +16,9 @@ const toNepaliDigits = (value) =>
   String(value).replace(/[0-9]/g, (d) => NEPALI_DIGITS[Number(d)]);
 
 const AD_YEAR_MIN = 1944;
-const AD_YEAR_MAX = 2033;
+const AD_YEAR_MAX = 2041;
 const BS_YEAR_MIN = 2000;
-const BS_YEAR_MAX = 2090;
+const BS_YEAR_MAX = 2098;
 
 const STYLES = `
 :host {

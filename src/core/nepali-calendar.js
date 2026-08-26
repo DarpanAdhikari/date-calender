@@ -29,8 +29,8 @@ const fmt = (y, m, d) => `${String(y).padStart(4, '0')}-${pad2(m)}-${pad2(d)}`;
  * anchored against known BS/AD equivalence points.
  *
  * Supported ranges:
- *   AD: 1944-04-14 -> ~2033
- *   BS: 2000-01-01 -> 2090-12-xx
+ *   AD: 1944-04-14 -> 2041-04-14
+ *   BS: 2000-01-01 -> 2098-12-31
  */
 export class DrpNepaliCalendar {
   /** Last error/validation message. */
@@ -58,8 +58,8 @@ export class DrpNepaliCalendar {
   }
 
   #isRangeEng(yy, mm, dd) {
-    if (yy < 1944 || yy > 2033) {
-      this.debug_info = 'AD year out of range. Supported: 1944-2033.';
+    if (yy < 1944 || yy > 2041) {
+      this.debug_info = 'AD year out of range. Supported: 1944-2041.';
       return false;
     }
     if (mm < 1 || mm > 12) {
@@ -74,8 +74,8 @@ export class DrpNepaliCalendar {
   }
 
   #isRangeNep(yy, mm, dd) {
-    if (yy < 2000 || yy > 2090) {
-      this.debug_info = 'BS year out of range. Supported: 2000-2090.';
+    if (yy < 2000 || yy > 2098) {
+      this.debug_info = 'BS year out of range. Supported: 2000-2098.';
       return false;
     }
     if (mm < 1 || mm > 12) {
@@ -735,6 +735,116 @@ export class DrpNepaliCalendar {
       leading_blanks: startWeekday - 1,
       days,
     };
+  }
+
+  // ═════════════════════════════════════════════════════════════════
+  //  ENGLISH-FIRST HELPERS
+  //  Convenience methods that mirror the Nepali-centric ones above,
+  //  but accept AD dates directly instead of requiring BS input.
+  // ═════════════════════════════════════════════════════════════════
+
+  /** Today's date as an AD 'YYYY-MM-DD' string. */
+  today_eng() {
+    const t = new Date();
+    return fmt(t.getFullYear(), t.getMonth() + 1, t.getDate());
+  }
+
+  /**
+   * Offset an AD date by N days (positive = future, negative = past).
+   * @param {string} date AD 'YYYY-MM-DD'
+   * @param {number} days
+   * @returns {string|false} AD 'YYYY-MM-DD'
+   */
+  get_date_eng(date, days) {
+    const [y, m, d] = date.split('-').map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    dt.setUTCDate(dt.getUTCDate() + days);
+    return fmt(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate());
+  }
+
+  /**
+   * Month boundaries starting from an AD year/month.
+   * Unlike get_month_dates_eng() which takes BS year/month, this accepts AD directly.
+   * @param {number} year AD year
+   * @param {number} month AD month (1-12)
+   * @returns {{ start_date: string, end_date: string, days: number }|false}
+   */
+  get_month_dates_eng_from_ad(year, month) {
+    if (!this.#isRangeEng(year, month, 1)) return false;
+    const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    return {
+      start_date: fmt(year, month, 1),
+      end_date: fmt(year, month, daysInMonth),
+      days: daysInMonth,
+    };
+  }
+
+  // ═════════════════════════════════════════════════════════════════
+  //  DATE VALIDATION
+  // ═════════════════════════════════════════════════════════════════
+
+  /**
+   * Check if a string is a valid BS date within the supported range.
+   * @param {string} date 'YYYY-MM-DD'
+   * @returns {boolean}
+   */
+  is_valid_bs_date(date) {
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+    const [y, m, d] = date.split('-').map(Number);
+    return this.#isRangeNep(y, m, d);
+  }
+
+  /**
+   * Check if a string is a valid AD date within the supported range.
+   * @param {string} date 'YYYY-MM-DD'
+   * @returns {boolean}
+   */
+  is_valid_ad_date(date) {
+    if (typeof date !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
+    const [y, m, d] = date.split('-').map(Number);
+    const dt = new Date(Date.UTC(y, m - 1, d));
+    if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return false;
+    return this.#isRangeEng(y, m, d);
+  }
+
+  // ═════════════════════════════════════════════════════════════════
+  //  DATE FORMATTING
+  // ═════════════════════════════════════════════════════════════════
+
+  #applyFormat(year, month, date, formatStr, system) {
+    const months = system === 'bs' ? NEPALI_MONTHS : ENGLISH_MONTHS_FULL;
+    return formatStr
+      .replace(/YYYY/g, String(year))
+      .replace(/YY/g, String(year).slice(-2))
+      .replace(/MMMM/g, months[month] || '')
+      .replace(/MM/g, pad2(month))
+      .replace(/M/g, String(month))
+      .replace(/DD/g, pad2(date))
+      .replace(/D/g, String(date));
+  }
+
+  /**
+   * Format a BS date string using format tokens (YYYY, YY, MMMM, MM, M, DD, D).
+   * @param {string} date BS 'YYYY-MM-DD'
+   * @param {string} format e.g. 'DD MMMM YYYY'
+   * @returns {string|false}
+   */
+  format_bs(date, format) {
+    const [y, m, d] = date.split('-').map(Number);
+    if (!this.#isRangeNep(y, m, d)) return false;
+    return this.#applyFormat(y, m, d, format, 'bs');
+  }
+
+  /**
+   * Format an AD date string using format tokens.
+   * @param {string} date AD 'YYYY-MM-DD'
+   * @param {string} format e.g. 'DD MMMM YYYY'
+   * @returns {string|false}
+   */
+  format_ad(date, format) {
+    const [y, m, d] = date.split('-').map(Number);
+    if (!this.#isRangeEng(y, m, d)) return false;
+    return this.#applyFormat(y, m, d, format, 'ad');
   }
 }
 

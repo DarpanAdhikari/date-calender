@@ -1,20 +1,23 @@
 {
   "name": "drp-datepicker",
-  "version": "1.2.0",
-  "description": "DRP Nepali Datepicker — Bikram Sambat (BS) <-> Gregorian (AD) date conversion + a modern <drp-datepicker> Web Component with dual-calendar day cells.",
+  "version": "1.3.0",
+  "description": "drp-datepicker — Bikram Sambat (BS) ↔ Gregorian (AD) date conversion engine + a dual-calendar <drp-datepicker> Web Component. Zero dependencies, works everywhere.",
   "type": "module",
   "main": "dist/drp-datepicker.cjs.js",
   "module": "src/index.js",
   "browser": "dist/drp-datepicker.global.js",
   "unpkg": "dist/drp-datepicker.global.js",
+  "types": "types/index.d.ts",
   "exports": {
     ".": {
       "import": "./src/index.js",
-      "require": "./dist/drp-datepicker.cjs.js"
+      "require": "./dist/drp-datepicker.cjs.js",
+      "types": "./types/index.d.ts"
     },
     "./core": {
       "import": "./src/core/nepali-calendar.js",
-      "require": "./dist/drp-core.cjs.js"
+      "require": "./dist/drp-core.cjs.js",
+      "types": "./types/nepali-calendar.d.ts"
     },
     "./datepicker": {
       "import": "./src/components/nepali-datepicker.js"
@@ -24,6 +27,7 @@
   "files": [
     "src",
     "dist",
+    "types",
     "README.md"
   ],
   "scripts": {
@@ -39,7 +43,13 @@
     "nepali-date",
     "nepali-datepicker",
     "web-component",
-    "electron"
+    "electron",
+    "date-conversion",
+    "dual-calendar",
+    "bikram-sambat-to-gregorian",
+    "nepali-calendar",
+    "bs-to-ad",
+    "ad-to-bs"
   ],
   "license": "MIT",
   "devDependencies": {
