@@ -4,7 +4,7 @@
 > modern `<drp-datepicker>` Web Component — install once, drop it into any page.
 
 [![npm version](https://img.shields.io/npm/v/drp-datepicker.svg)](https://www.npmjs.com/package/drp-datepicker)
-[![license](https://img.shields.io/npm/l/drp-datepicker.svg)](https://github.com/darpanadhikari/date-picker-demo/blob/main/LICENSE)
+[![license](https://img.shields.io/npm/l/drp-datepicker.svg)](https://github.com/DarpanAdhikari/date-calender/blob/main/LICENSE)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/drp-datepicker)](https://bundlephobia.com/package/drp-datepicker)
 [![zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](https://www.npmjs.com/package/drp-datepicker)
 
@@ -14,8 +14,58 @@ A drop-in Nepali/English datepicker for any web app — vanilla JS, React, Vue, 
 
 ---
 
+## What is drp-datepicker?
+
+`drp-datepicker` is a **dependency-free Bikram Sambat (BS) ↔ Gregorian (AD) date picker and conversion engine**.
+
+- **It solves:** picking and converting dates in the Nepali **Bikram Sambat (BS)** calendar, while always keeping the English **Gregorian (AD)** equivalent in sync.
+- **Why it's different:** most Nepali datepickers only display one calendar and force you to wire up hidden inputs and framework glue. `drp-datepicker` is a standards-based **Web Component** with **dual-calendar cells** (both BS and AD visible on every day) and **native `<form>` integration** — no dependencies, no build step, works in any framework.
+- **BS + AD support:** every selection returns both the Nepali and English date, in either primary mode (`type="bs"` or `type="ad"`), plus a standalone conversion API (`DrpNepaliCalendar`) usable without any UI.
+
+### Install
+
+```bash
+npm i drp-datepicker
+```
+
+### Minimal example
+
+```html
+<drp-datepicker id="dp"></drp-datepicker>
+<script type="module">
+  import 'drp-datepicker';
+  document.getElementById('dp').addEventListener('change', (e) => {
+    console.log('BS:', e.detail.bs.formatted); // '2082-02-27'
+    console.log('AD:', e.detail.ad.formatted); // '2025-06-10'
+  });
+</script>
+```
+
+Or load it via CDN with no build step:
+
+```html
+<script src="https://unpkg.com/drp-datepicker@latest/dist/drp-datepicker.global.js"></script>
+```
+
+### Framework compatibility
+
+Because it's a native Web Component, `<drp-datepicker>` works wherever HTML works — no framework-specific wrappers required:
+
+| Environment | Usage |
+|-------------|-------|
+| **Vanilla JavaScript / plain HTML** | `<script>` tag, ESM, or CDN |
+| **React / Preact** | `<drp-datepicker>` in JSX (set props via `ref`/attributes) |
+| **Vue** | `<drp-datepicker>` in templates |
+| **Angular** | `<drp-datepicker>` in templates (add to `CUSTOM_ELEMENTS_SCHEMA`) |
+| **Laravel / Blade** | Just drop the `<script>` + `<drp-datepicker>` into a Blade view |
+| **Electron** | Tested in Electron 43 (Chromium) |
+| **Node.js** | Core conversion engine only (`require('drp-datepicker/core')`) |
+
+---
+
 ## Table of Contents
 
+- [What is drp-datepicker?](#what-is-drp-datepicker)
 - [Why drp-datepicker?](#why-drp-datepicker)
 - [Getting Started](#getting-started)
   - [Install](#install)
@@ -1006,8 +1056,8 @@ The web component uses standard Custom Elements v1, Shadow DOM, and `ElementInte
 
 ```bash
 # Clone the repo
-git clone https://github.com/darpanadhikari/date-picker-demo.git
-cd date-picker-demo
+git clone https://github.com/DarpanAdhikari/date-calender.git
+cd date-calender
 
 # Install dependencies (dev only — esbuild + jsdom)
 npm install
@@ -1144,6 +1194,12 @@ Contributions are welcome! Here's how to get started:
 
 ## Changelog
 
+### v1.4.0
+
+- Package metadata improvements: added `repository`, `homepage`, `bugs`, and `author` to `package.json`
+- Expanded discoverability keywords (framework tags: react, vue, angular, laravel, blade)
+- Documentation: new "What is drp-datepicker?" and "Framework compatibility" sections; corrected repository URLs to `date-calender`
+
 ### v1.3.0
 
 - Extended date range: BS 2000–2098 (AD 1944–2041), up from BS 2000–2090
@@ -1193,4 +1249,4 @@ See [LICENSE](./LICENSE) for full text.
 
 Developed by [Darpan Adhikari](https://darpanadhikari.com.np)
 
-**Live demo:** https://darpanadhikari.github.io/date-picker-demo
+**Live demo:** https://github.com/DarpanAdhikari/date-calender#readme

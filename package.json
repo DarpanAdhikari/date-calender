@@ -49,9 +49,27 @@
     "bikram-sambat-to-gregorian",
     "nepali-calendar",
     "bs-to-ad",
-    "ad-to-bs"
+    "ad-to-bs",
+    "date-picker",
+    "calendar",
+    "gregorian",
+    "react",
+    "vue",
+    "angular",
+    "laravel",
+    "blade",
+    "vanilla-js"
   ],
   "license": "MIT",
+  "author": "Darpan Adhikari <darpand263@gmail.com> (https://darpanadhikari.com.np)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DarpanAdhikari/date-calender.git"
+  },
+  "homepage": "https://github.com/DarpanAdhikari/date-calender#readme",
+  "bugs": {
+    "url": "https://github.com/DarpanAdhikari/date-calender/issues"
+  },
   "devDependencies": {
     "esbuild": "^0.21.5",
     "jsdom": "^24.0.0"
@@ -61,6 +79,5 @@
   },
   "directories": {
     "example": "examples"
-  },
-  "author": ""
+  }
 }
