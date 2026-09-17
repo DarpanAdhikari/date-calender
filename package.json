@@ -1,6 +1,6 @@
 {
   "name": "drp-datepicker",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "drp-datepicker — Bikram Sambat (BS) ↔ Gregorian (AD) date conversion engine + a dual-calendar <drp-datepicker> Web Component. Zero dependencies, works everywhere.",
   "type": "module",
   "main": "dist/drp-datepicker.cjs.js",
