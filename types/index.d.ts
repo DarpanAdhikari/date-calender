@@ -10,6 +10,8 @@ export type {
   CalendarMonthAd,
   FiscalYearResult,
   Holiday,
+  CalendarEvent,
+  EventType,
   CalendarOptions,
 } from './nepali-calendar';
 
@@ -20,6 +22,7 @@ export class DrpDatePicker extends HTMLElement {
   valueBS: string;
   valueAD: string;
   holidays: Holiday[];
+  events: CalendarEvent[];
   disabledDates: Array<{ date: string }>;
   type: 'bs' | 'ad';
   name: string;

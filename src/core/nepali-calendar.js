@@ -579,6 +579,40 @@ export class DrpNepaliCalendar {
   }
 
   /**
+   * Build a map of BS date -> list of events.
+   * Each event is normalized to { date, label, type, color }.
+   * @param {Array} events  Array of { date, label?, type?, color? }
+   * @returns {Map<string, Array>}
+   */
+  #buildEventMap(events) {
+    const map = new Map();
+    if (Array.isArray(events)) {
+      for (const e of events) {
+        if (!e || !e.date) continue;
+        const norm = {
+          date: e.date,
+          label: e.label || '',
+          type: e.type || 'event',
+          color: e.color || null,
+        };
+        if (!map.has(e.date)) map.set(e.date, []);
+        map.get(e.date).push(norm);
+      }
+    }
+    return map;
+  }
+
+  /**
+   * The events (list form) for a given BS date string, or [] if none.
+   * @param {Map<string, Array>} eventMap
+   * @param {string} bsDateStr
+   * @returns {Array}
+   */
+  #eventsFor(eventMap, bsDateStr) {
+    return eventMap.get(bsDateStr) || [];
+  }
+
+  /**
    * Full calendar info for one BS month — every day, with its AD equivalent,
    * weekday, and (optionally) holiday/today flags. Everything a calendar UI
    * needs to render a month grid, in one call.
@@ -587,11 +621,13 @@ export class DrpNepaliCalendar {
    *   cal.get_calendar_month_nep('2083-03')
    *   cal.get_calendar_month_nep(2083, 3)
    *   cal.get_calendar_month_nep(2083, 3, { holidays: [{ date: '2083-03-01', label: 'New Year' }] })
+   *   cal.get_calendar_month_nep(2083, 3, { events: [{ date: '2083-03-01', label: 'Payroll', type: 'deadline' }] })
    *
    * @param {number|string} yearOrStr  BS year, or a 'YYYY-MM' BS string
    * @param {number|object} [monthOrOptions]  BS month (1-12), or the options object if the first arg was a string
    * @param {object} [maybeOptions]
    * @param {Array<{date:string,label?:string}>} [maybeOptions.holidays]  BS 'YYYY-MM-DD' dates
+   * @param {Array<{date:string,label?:string,type?:string,color?:string}>} [maybeOptions.events]  BS 'YYYY-MM-DD' general events
    * @returns {object|false}
    */
   get_calendar_month_nep(yearOrStr, monthOrOptions, maybeOptions) {
@@ -600,6 +636,7 @@ export class DrpNepaliCalendar {
     if (!info) return false;
 
     const holidayMap = this.#buildHolidayMap(options.holidays);
+    const eventMap = this.#buildEventMap(options.events);
     const todayBsStr = this.today_nep();
 
     const firstAd = this.nep_to_eng(year, month, 1);
@@ -616,6 +653,7 @@ export class DrpNepaliCalendar {
       const adDay = adDt.getUTCDate();
       const bsDateStr = fmt(year, month, d);
 
+      const events = this.#eventsFor(eventMap, bsDateStr);
       days.push({
         bs_date: bsDateStr,
         bs_year: year,
@@ -631,6 +669,8 @@ export class DrpNepaliCalendar {
         is_today: bsDateStr === todayBsStr,
         is_holiday: holidayMap.has(bsDateStr),
         holiday_label: holidayMap.get(bsDateStr) || null,
+        is_event: events.length > 0,
+        events,
       });
     }
 
@@ -670,6 +710,7 @@ export class DrpNepaliCalendar {
    * @param {number|object} [monthOrOptions]  AD month (1-12), or the options object if the first arg was a string
    * @param {object} [maybeOptions]
    * @param {Array<{date:string,label?:string}>} [maybeOptions.holidays]  BS 'YYYY-MM-DD' dates
+   * @param {Array<{date:string,label?:string,type?:string,color?:string}>} [maybeOptions.events]  BS 'YYYY-MM-DD' general events
    * @returns {object|false}
    */
   get_calendar_month_eng(yearOrStr, monthOrOptions, maybeOptions) {
@@ -678,6 +719,7 @@ export class DrpNepaliCalendar {
 
     const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
     const holidayMap = this.#buildHolidayMap(options.holidays);
+    const eventMap = this.#buildEventMap(options.events);
     const todayBsStr = this.today_nep();
 
     const firstBs = this.eng_to_nep(year, month, 1);
@@ -693,6 +735,7 @@ export class DrpNepaliCalendar {
       const bsDateStr = fmt(by, bm, bd);
       const adDateStr = fmt(year, month, d);
 
+      const events = this.#eventsFor(eventMap, bsDateStr);
       days.push({
         ad_date: adDateStr,
         ad_year: year,
@@ -708,6 +751,8 @@ export class DrpNepaliCalendar {
         is_today: bsDateStr === todayBsStr,
         is_holiday: holidayMap.has(bsDateStr),
         holiday_label: holidayMap.get(bsDateStr) || null,
+        is_event: events.length > 0,
+        events,
       });
 
       bd++;

@@ -42,6 +42,8 @@ export interface CalendarDayBs {
   is_today: boolean;
   is_holiday: boolean;
   holiday_label: string | null;
+  is_event: boolean;
+  events: CalendarEvent[];
 }
 
 export interface CalendarDayAd {
@@ -59,6 +61,8 @@ export interface CalendarDayAd {
   is_today: boolean;
   is_holiday: boolean;
   holiday_label: string | null;
+  is_event: boolean;
+  events: CalendarEvent[];
 }
 
 export interface CalendarMonthBs {
@@ -107,8 +111,18 @@ export interface Holiday {
   label?: string;
 }
 
+export type EventType = 'holiday' | 'festival' | 'event' | 'deadline' | 'custom';
+
+export interface CalendarEvent {
+  date: string;
+  label?: string;
+  type?: EventType;
+  color?: string | null;
+}
+
 export interface CalendarOptions {
   holidays?: Holiday[];
+  events?: CalendarEvent[];
 }
 
 export class DrpNepaliCalendar {

@@ -693,6 +693,38 @@ var DrpNepaliCalendar = class {
     return map;
   }
   /**
+   * Build a map of BS date -> list of events.
+   * Each event is normalized to { date, label, type, color }.
+   * @param {Array} events  Array of { date, label?, type?, color? }
+   * @returns {Map<string, Array>}
+   */
+  #buildEventMap(events) {
+    const map = /* @__PURE__ */ new Map();
+    if (Array.isArray(events)) {
+      for (const e of events) {
+        if (!e || !e.date) continue;
+        const norm = {
+          date: e.date,
+          label: e.label || "",
+          type: e.type || "event",
+          color: e.color || null
+        };
+        if (!map.has(e.date)) map.set(e.date, []);
+        map.get(e.date).push(norm);
+      }
+    }
+    return map;
+  }
+  /**
+   * The events (list form) for a given BS date string, or [] if none.
+   * @param {Map<string, Array>} eventMap
+   * @param {string} bsDateStr
+   * @returns {Array}
+   */
+  #eventsFor(eventMap, bsDateStr) {
+    return eventMap.get(bsDateStr) || [];
+  }
+  /**
    * Full calendar info for one BS month — every day, with its AD equivalent,
    * weekday, and (optionally) holiday/today flags. Everything a calendar UI
    * needs to render a month grid, in one call.
@@ -701,11 +733,13 @@ var DrpNepaliCalendar = class {
    *   cal.get_calendar_month_nep('2083-03')
    *   cal.get_calendar_month_nep(2083, 3)
    *   cal.get_calendar_month_nep(2083, 3, { holidays: [{ date: '2083-03-01', label: 'New Year' }] })
+   *   cal.get_calendar_month_nep(2083, 3, { events: [{ date: '2083-03-01', label: 'Payroll', type: 'deadline' }] })
    *
    * @param {number|string} yearOrStr  BS year, or a 'YYYY-MM' BS string
    * @param {number|object} [monthOrOptions]  BS month (1-12), or the options object if the first arg was a string
    * @param {object} [maybeOptions]
    * @param {Array<{date:string,label?:string}>} [maybeOptions.holidays]  BS 'YYYY-MM-DD' dates
+   * @param {Array<{date:string,label?:string,type?:string,color?:string}>} [maybeOptions.events]  BS 'YYYY-MM-DD' general events
    * @returns {object|false}
    */
   get_calendar_month_nep(yearOrStr, monthOrOptions, maybeOptions) {
@@ -713,6 +747,7 @@ var DrpNepaliCalendar = class {
     const info = this.get_month_dates_nep(year, month);
     if (!info) return false;
     const holidayMap = this.#buildHolidayMap(options.holidays);
+    const eventMap = this.#buildEventMap(options.events);
     const todayBsStr = this.today_nep();
     const firstAd = this.nep_to_eng(year, month, 1);
     if (!firstAd) return false;
@@ -726,6 +761,7 @@ var DrpNepaliCalendar = class {
       const adMonth = adDt.getUTCMonth() + 1;
       const adDay = adDt.getUTCDate();
       const bsDateStr = fmt(year, month, d);
+      const events = this.#eventsFor(eventMap, bsDateStr);
       days.push({
         bs_date: bsDateStr,
         bs_year: year,
@@ -740,7 +776,9 @@ var DrpNepaliCalendar = class {
         is_saturday: weekday === 7,
         is_today: bsDateStr === todayBsStr,
         is_holiday: holidayMap.has(bsDateStr),
-        holiday_label: holidayMap.get(bsDateStr) || null
+        holiday_label: holidayMap.get(bsDateStr) || null,
+        is_event: events.length > 0,
+        events
       });
     }
     const adBoundaries = this.get_month_dates_eng(year, month);
@@ -777,6 +815,7 @@ var DrpNepaliCalendar = class {
    * @param {number|object} [monthOrOptions]  AD month (1-12), or the options object if the first arg was a string
    * @param {object} [maybeOptions]
    * @param {Array<{date:string,label?:string}>} [maybeOptions.holidays]  BS 'YYYY-MM-DD' dates
+   * @param {Array<{date:string,label?:string,type?:string,color?:string}>} [maybeOptions.events]  BS 'YYYY-MM-DD' general events
    * @returns {object|false}
    */
   get_calendar_month_eng(yearOrStr, monthOrOptions, maybeOptions) {
@@ -784,6 +823,7 @@ var DrpNepaliCalendar = class {
     if (!this.#isRangeEng(year, month, 1)) return false;
     const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
     const holidayMap = this.#buildHolidayMap(options.holidays);
+    const eventMap = this.#buildEventMap(options.events);
     const todayBsStr = this.today_nep();
     const firstBs = this.eng_to_nep(year, month, 1);
     if (!firstBs) return false;
@@ -795,6 +835,7 @@ var DrpNepaliCalendar = class {
       const weekday = (startWeekday - 1 + (d - 1)) % 7 + 1;
       const bsDateStr = fmt(by, bm, bd);
       const adDateStr = fmt(year, month, d);
+      const events = this.#eventsFor(eventMap, bsDateStr);
       days.push({
         ad_date: adDateStr,
         ad_year: year,
@@ -809,7 +850,9 @@ var DrpNepaliCalendar = class {
         is_saturday: weekday === 7,
         is_today: bsDateStr === todayBsStr,
         is_holiday: holidayMap.has(bsDateStr),
-        holiday_label: holidayMap.get(bsDateStr) || null
+        holiday_label: holidayMap.get(bsDateStr) || null,
+        is_event: events.length > 0,
+        events
       });
       bd++;
       if (bd > bsMonthInfo.days) {
@@ -1153,6 +1196,19 @@ var STYLES = `
   background: var(--ndp-accent);
 }
 .day.is-selected.is-holiday::after { background: #fff; }
+
+/* General event dot \u2014 additive to the holiday dot. */
+.day.is-event .event-dot {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ndp-accent);
+}
+.day.is-selected.is-event .event-dot { background: #fff; }
+
 .day.is-outside { visibility: hidden; }
 .day:disabled { opacity: 0.32; cursor: not-allowed; background: none; }
 
@@ -1247,6 +1303,7 @@ var DrpDatePicker = class extends HTMLElement {
   }
   #cal = new DrpNepaliCalendar();
   #holidays = [];
+  #events = [];
   #disabledDates = [];
   #selected = null;
   #view = null;
@@ -1334,6 +1391,14 @@ var DrpDatePicker = class extends HTMLElement {
   }
   set holidays(list) {
     this.#holidays = Array.isArray(list) ? list : [];
+    this.#render();
+  }
+  /** Array of general events: { date: 'YYYY-MM-DD' (BS), label?, type?, color? }. */
+  get events() {
+    return this.#events;
+  }
+  set events(list) {
+    this.#events = Array.isArray(list) ? list : [];
     this.#render();
   }
   /** Array of { date: 'YYYY-MM-DD' } to disable. Date format matches the primary type (BS/AD). */
@@ -1878,7 +1943,7 @@ var DrpDatePicker = class extends HTMLElement {
   #renderDays(type) {
     const isBs = type === "bs";
     const { year, month } = this.#view;
-    const grid = isBs ? this.#cal.get_calendar_month_nep(year, month, { holidays: this.#holidays }) : this.#cal.get_calendar_month_eng(year, month, { holidays: this.#holidays });
+    const grid = isBs ? this.#cal.get_calendar_month_nep(year, month, { holidays: this.#holidays, events: this.#events }) : this.#cal.get_calendar_month_eng(year, month, { holidays: this.#holidays, events: this.#events });
     if (!grid) return;
     const markSaturday = this.getAttribute("mark-saturday") !== "false";
     const cells = grid.days.map((d, i) => this.#buildCell({
@@ -1891,6 +1956,7 @@ var DrpDatePicker = class extends HTMLElement {
       isToday: d.is_today,
       isSelected: !!(this.#selected && this.#selected.year === d.bs_year && this.#selected.month === d.bs_month && this.#selected.date === d.bs_day),
       holidayLabel: d.is_holiday ? d.holiday_label : void 0,
+      events: d.events,
       onSelect: () => {
         this.#selected = { year: d.bs_year, month: d.bs_month, date: d.bs_day };
       }
@@ -1904,9 +1970,10 @@ var DrpDatePicker = class extends HTMLElement {
     });
   }
   // ── shared cell + panel rendering ───────────────────────────────────
-  #buildCell({ index, key, primaryHtml, secondaryHtml, weekday, markSaturday, isToday, isSelected, holidayLabel, onSelect }) {
+  #buildCell({ index, key, primaryHtml, secondaryHtml, weekday, markSaturday, isToday, isSelected, holidayLabel, events, onSelect }) {
     const isSaturday = markSaturday && weekday === 7;
     const isHoliday = holidayLabel !== void 0;
+    const hasEvents = Array.isArray(events) && events.length > 0;
     const isDisabled = this.#isDisabledDate(key);
     const isFocused = this.#focusedDayKey === key;
     const cls = ["day"];
@@ -1914,14 +1981,21 @@ var DrpDatePicker = class extends HTMLElement {
     if (isSelected) cls.push("is-selected");
     if (isSaturday) cls.push("is-saturday");
     if (isHoliday) cls.push("is-holiday");
+    if (hasEvents) cls.push("is-event");
     if (isFocused) cls.push("is-focus");
-    const title = isHoliday && holidayLabel ? ` title="${holidayLabel.replace(/"/g, "&quot;")}"` : "";
+    const labels = [];
+    if (isHoliday && holidayLabel) labels.push(holidayLabel);
+    if (hasEvents) {
+      for (const e of events) if (e && e.label) labels.push(e.label);
+    }
+    const title = labels.length ? ` title="${labels.join("\n").replace(/"/g, "&quot;")}"` : "";
     const primaryLabel = primaryHtml.replace(/<[^>]*>/g, "");
     const secondaryLabel = secondaryHtml.replace(/<[^>]*>/g, "");
     return {
       html: `<button class="${cls.join(" ")}" part="day" role="gridcell" data-key="${key}" data-index="${index}" tabindex="-1" aria-selected="${isSelected}" ${isDisabled ? "disabled" : ""}${title}>
         <span class="primary-num">${primaryHtml}</span>
         <span class="secondary-num">${secondaryHtml}</span>
+        ${hasEvents ? '<span class="event-dot"></span>' : ""}
       </button>`,
       onSelect,
       ariaLabel: `${primaryLabel}, ${secondaryLabel}`

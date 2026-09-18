@@ -1,6 +1,6 @@
 {
   "name": "drp-datepicker",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "description": "drp-datepicker — Bikram Sambat (BS) ↔ Gregorian (AD) date conversion engine + a dual-calendar <drp-datepicker> Web Component. Zero dependencies, works everywhere.",
   "type": "module",
   "main": "dist/drp-datepicker.cjs.js",
@@ -58,7 +58,10 @@
     "angular",
     "laravel",
     "blade",
-    "vanilla-js"
+    "vanilla-js",
+    "holidays",
+    "calendar-events",
+    "festival"
   ],
   "license": "MIT",
   "author": "Darpan Adhikari <darpand263@gmail.com> (https://darpanadhikari.com.np)",

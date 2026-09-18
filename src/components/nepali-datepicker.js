@@ -231,6 +231,19 @@ const STYLES = `
   background: var(--ndp-accent);
 }
 .day.is-selected.is-holiday::after { background: #fff; }
+
+/* General event dot — additive to the holiday dot. */
+.day.is-event .event-dot {
+  position: absolute;
+  top: 3px;
+  right: 4px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--ndp-accent);
+}
+.day.is-selected.is-event .event-dot { background: #fff; }
+
 .day.is-outside { visibility: hidden; }
 .day:disabled { opacity: 0.32; cursor: not-allowed; background: none; }
 
@@ -329,6 +342,7 @@ export class DrpDatePicker extends HTMLElement {
 
   #cal = new DrpNepaliCalendar();
   #holidays = [];
+  #events = [];
   #disabledDates = [];
   #selected = null;
   #view = null;
@@ -432,6 +446,13 @@ export class DrpDatePicker extends HTMLElement {
   get holidays() { return this.#holidays; }
   set holidays(list) {
     this.#holidays = Array.isArray(list) ? list : [];
+    this.#render();
+  }
+
+  /** Array of general events: { date: 'YYYY-MM-DD' (BS), label?, type?, color? }. */
+  get events() { return this.#events; }
+  set events(list) {
+    this.#events = Array.isArray(list) ? list : [];
     this.#render();
   }
 
@@ -1002,8 +1023,8 @@ export class DrpDatePicker extends HTMLElement {
     const isBs = type === 'bs';
     const { year, month } = this.#view;
     const grid = isBs
-      ? this.#cal.get_calendar_month_nep(year, month, { holidays: this.#holidays })
-      : this.#cal.get_calendar_month_eng(year, month, { holidays: this.#holidays });
+      ? this.#cal.get_calendar_month_nep(year, month, { holidays: this.#holidays, events: this.#events })
+      : this.#cal.get_calendar_month_eng(year, month, { holidays: this.#holidays, events: this.#events });
     if (!grid) return;
 
     const markSaturday = this.getAttribute('mark-saturday') !== 'false';
@@ -1018,6 +1039,7 @@ export class DrpDatePicker extends HTMLElement {
       isToday: d.is_today,
       isSelected: !!(this.#selected && this.#selected.year === d.bs_year && this.#selected.month === d.bs_month && this.#selected.date === d.bs_day),
       holidayLabel: d.is_holiday ? d.holiday_label : undefined,
+      events: d.events,
       onSelect: () => { this.#selected = { year: d.bs_year, month: d.bs_month, date: d.bs_day }; },
     }));
 
@@ -1035,9 +1057,10 @@ export class DrpDatePicker extends HTMLElement {
 
   // ── shared cell + panel rendering ───────────────────────────────────
 
-  #buildCell({ index, key, primaryHtml, secondaryHtml, weekday, markSaturday, isToday, isSelected, holidayLabel, onSelect }) {
+  #buildCell({ index, key, primaryHtml, secondaryHtml, weekday, markSaturday, isToday, isSelected, holidayLabel, events, onSelect }) {
     const isSaturday = markSaturday && weekday === 7;
     const isHoliday = holidayLabel !== undefined;
+    const hasEvents = Array.isArray(events) && events.length > 0;
     const isDisabled = this.#isDisabledDate(key);
     const isFocused = this.#focusedDayKey === key;
 
@@ -1046,9 +1069,17 @@ export class DrpDatePicker extends HTMLElement {
     if (isSelected) cls.push('is-selected');
     if (isSaturday) cls.push('is-saturday');
     if (isHoliday) cls.push('is-holiday');
+    if (hasEvents) cls.push('is-event');
     if (isFocused) cls.push('is-focus');
 
-    const title = isHoliday && holidayLabel ? ` title="${holidayLabel.replace(/"/g, '&quot;')}"` : '';
+    // Build the tooltip title. Holidays contribute their label; events their
+    // labels too. Multiple entries are joined on a newline.
+    const labels = [];
+    if (isHoliday && holidayLabel) labels.push(holidayLabel);
+    if (hasEvents) for (const e of events) if (e && e.label) labels.push(e.label);
+    const title = labels.length
+      ? ` title="${labels.join('\n').replace(/"/g, '&quot;')}"`
+      : '';
 
     const primaryLabel = primaryHtml.replace(/<[^>]*>/g, '');
     const secondaryLabel = secondaryHtml.replace(/<[^>]*>/g, '');
@@ -1057,6 +1088,7 @@ export class DrpDatePicker extends HTMLElement {
       html: `<button class="${cls.join(' ')}" part="day" role="gridcell" data-key="${key}" data-index="${index}" tabindex="-1" aria-selected="${isSelected}" ${isDisabled ? 'disabled' : ''}${title}>
         <span class="primary-num">${primaryHtml}</span>
         <span class="secondary-num">${secondaryHtml}</span>
+        ${hasEvents ? '<span class="event-dot"></span>' : ''}
       </button>`,
       onSelect,
       ariaLabel: `${primaryLabel}, ${secondaryLabel}`,

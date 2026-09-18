@@ -459,6 +459,8 @@ month.days.forEach(day => {
 Each day object includes:
 - `is_holiday` — `true` if the date matches a holiday entry
 - `holiday_label` — the label string, or `null` if no label was provided
+- `is_event` — `true` if any general event matches this date
+- `events` — the normalized array `[{ date, label, type, color }]` (empty if none)
 
 ##### Disabling Holidays
 
@@ -469,6 +471,64 @@ dp.holidays = [];
 ```
 
 Or simply never set the property — the calendar renders with no holiday styling by default.
+
+#### General Events
+
+Beyond holidays, the calendar supports **typed events** — deadlines, festivals, bookings,
+meetings, etc. Events are additive to holidays and are always specified in **BS** format
+(the canonical holiday calendar).
+
+##### Setting Events
+
+Events are set via the `events` property on the element or returned from the core grid
+builders (`get_calendar_month_nep` / `get_calendar_month_eng`).
+
+```js
+import 'drp-datepicker';
+const dp = document.getElementById('dp');
+
+dp.events = [
+  { date: '2082-02-20', label: 'Payroll', type: 'deadline' },
+  { date: '2082-02-25', label: 'Office meeting', type: 'event', color: '#336699' },
+];
+```
+
+##### Event Data Format
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `date` | `string` | Yes | BS date in `'YYYY-MM-DD'` format |
+| `label` | `string` | No | Tooltip text shown on hover |
+| `type` | `string` | No | `'holiday'` \| `'festival'` \| `'event'` \| `'deadline'` \| `'custom'` (default `'event'`) |
+| `color` | `string` | No | Optional CSS colour override for the event dot |
+
+Events appear as a small **accent dot** on the day cell with a tooltip listing all labels.
+Multiple events can fall on the same day. `holidays` and `events` can be combined — holiday
+entries keep their holiday styling and event entries add the event dot.
+
+##### Events in Custom Calendar UIs
+
+The grid builders attach an `events` array to every day:
+
+```js
+const month = cal.get_calendar_month_nep('2083-03', {
+  events: [
+    { date: '2083-03-05', label: 'Payroll', type: 'deadline' },
+  ],
+});
+
+month.days.forEach((day) => {
+  if (day.is_event) {
+    console.log(day.bs_date, day.events.map((e) => `${e.type}: ${e.label}`).join(', '));
+    // "2083-03-05 deadline: Payroll"
+  }
+});
+```
+
+Each day object includes:
+- `is_event` — `true` if any event matches this date
+- `events` — the normalized array `[{ date, label, type, color }]`
+- `is_holiday` / `holiday_label` — unchanged, still driven only by `holidays`
 
 #### Smart Positioning
 
@@ -903,6 +963,7 @@ This is the exact same method the component uses internally, so your custom UI a
 | `.valueBS` | `string` | Always BS `'YYYY-MM-DD'`, regardless of `type` |
 | `.valueAD` | `string` | Always AD `'YYYY-MM-DD'`, regardless of `type` |
 | `.holidays` | `Array<{ date: 'YYYY-MM-DD' (BS), label?: string }>` | Optional holiday dates |
+| `.events` | `Array<{ date: 'YYYY-MM-DD' (BS), label?: string, type?: string, color?: string }>` | Optional general events (additive to holidays) |
 | `.disabledDates` | `Array<{ date: 'YYYY-MM-DD' }>` | Specific dates to disable |
 | `.type` | `string` | `'bs'` or `'ad'` |
 | `.name` | `string` | Form field name |
@@ -1193,6 +1254,15 @@ Contributions are welcome! Here's how to get started:
 ---
 
 ## Changelog
+
+### v1.5.0
+
+- **General events**: new `events` option on the `<drp-datepicker>` component and the
+  core grid builders (`get_calendar_month_nep` / `get_calendar_month_eng`), additive to
+  holidays. Each day gains `is_event` and an `events` array (`{ date, label, type, color }`)
+  with types `holiday | festival | event | deadline | custom`.
+- Existing `holidays` behaviour is unchanged and remains fully backward-compatible.
+- Updated TypeScript definitions for `CalendarEvent`, `EventType`, and the new day fields.
 
 ### v1.4.0
 

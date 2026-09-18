@@ -71,6 +71,10 @@ function makeEl(attrs = {}) {
   const shadow = el.shadowRoot;
   const holidayCell = shadow.querySelector('.day.is-holiday');
   console.log('\nT3 holiday cell found:', !!holidayCell, holidayCell ? holidayCell.getAttribute('title') : null);
+  // events are additive: set a general event and confirm an .is-event cell + dot renders.
+  el.events = [{ date: '2082-02-20', label: 'Payroll', type: 'deadline' }];
+  const eventCell = shadow.querySelector('.day.is-event');
+  console.log('T3 event cell found:', !!eventCell, eventCell ? eventCell.getAttribute('title') : null, 'dot:', !!eventCell?.querySelector('.event-dot'));
   const firstNum = shadow.querySelector('.day .primary-num').textContent;
   console.log('T3 devanagari digit rendering (expect १):', firstNum);
 
@@ -106,3 +110,31 @@ console.log('\nALL SMOKE TESTS RAN');
   const m2 = cal.get_calendar_month_eng(2026, 6);
   console.log('T5 get_calendar_month_eng(2026,6): days_in_month=', m2.days_in_month, 'bs range:', m2.start_date_bs, '-', m2.end_date_bs);
 }
+
+// ── Test 6: general events (additive to holidays) ─────────────────────────
+async function testEvents() {
+  const cal = new DrpNepaliCalendar();
+  const m = cal.get_calendar_month_nep('2083-03', {
+    holidays: [{ date: '2083-03-01', label: 'New Year' }],
+    events: [
+      { date: '2083-03-05', label: 'Payroll', type: 'deadline' },
+      { date: '2083-03-05', label: 'Meeting', type: 'event', color: '#336699' },
+    ],
+  });
+  const day1 = m.days.find((d) => d.bs_date === '2083-03-01');
+  const day5 = m.days.find((d) => d.bs_date === '2083-03-05');
+  const day10 = m.days.find((d) => d.bs_date === '2083-03-10');
+
+  console.log('\nT6 holiday-only day: is_holiday=', day1.is_holiday, 'is_event=', day1.is_event, 'events=', JSON.stringify(day1.events));
+  console.log('T6 event day: is_holiday=', day5.is_holiday, 'is_event=', day5.is_event, 'events=', JSON.stringify(day5.events));
+  console.log('T6 plain day: is_holiday=', day10.is_holiday, 'is_event=', day10.is_event, 'events=', JSON.stringify(day10.events));
+
+  const ok =
+    day1.is_holiday === true && day1.is_event === false &&
+    day5.is_holiday === false && day5.is_event === true && day5.events.length === 2 &&
+    day10.is_holiday === false && day10.is_event === false;
+  if (!ok) throw new Error('T6 events test failed');
+  console.log('T6 events test PASSED');
+}
+
+await testEvents();
